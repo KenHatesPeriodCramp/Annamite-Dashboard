@@ -11,10 +11,11 @@ const NAV = [
   { id: 'macro',       label: 'Macro Monitor',        group: 'MACRO' },
   { id: 'regime',      label: 'Regime Analysis',      group: 'MACRO' },
   { id: 'retail',      label: 'Retail Participation', group: 'ALPHA' },
+  { id: 'chatbot', label: 'Portfolio Copilot', group: 'AI' },
   { id: 'portfolioTracking', label: 'Portfolio Workbook', group: 'OPERATIONS' },
 ]
 
-const GROUPS = ['PERFORMANCE', 'RISK', 'MACRO', 'ALPHA', 'OPERATIONS']
+const GROUPS = ['PERFORMANCE', 'RISK', 'MACRO', 'ALPHA', 'AI', 'OPERATIONS']
 
 export default function Sidebar({ active, onNav }) {
   const [time, setTime] = useState('')

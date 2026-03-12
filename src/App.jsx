@@ -10,6 +10,7 @@ import Macro from './pages/Macro'
 import Regime from './pages/Regime'
 import Retail from './pages/Retail'
 import PortfolioTracking from './pages/PortfolioTracking'
+import Chatbot from './pages/Chatbot'
 
 const PAGES = {
   overview: Overview,
@@ -22,6 +23,7 @@ const PAGES = {
   regime: Regime,
   retail: Retail,
   portfolioTracking: PortfolioTracking,
+  chatbot: Chatbot,
 }
 
 export default function App() {
