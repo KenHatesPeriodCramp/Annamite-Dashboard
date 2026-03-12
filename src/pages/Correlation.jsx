@@ -49,8 +49,8 @@ export default function Correlation() {
   return (
     <div className="p-5 space-y-4 animate-slide-in">
       <div>
-        <h1 className="text-[14px] font-semibold tracking-wide text-[#d0e2f5]">Correlation & VaR</h1>
-        <div className="text-[10px] text-[#3a5570] mt-0.5 tracking-wide">Risk Analytics · Value-at-Risk · Return Distribution</div>
+        <h1 className="text-[14px] font-semibold tracking-wide text-[#1e293b]">Correlation & VaR</h1>
+        <div className="text-[10px] text-[#64748b] mt-0.5 tracking-wide">Risk Analytics · Value-at-Risk · Return Distribution</div>
       </div>
 
       {/* VaR KPIs */}
@@ -71,7 +71,7 @@ export default function Correlation() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left py-1.5 pr-3 text-[9px] text-[#4a6a8a] font-normal w-20" />
+                  <th className="text-left py-1.5 pr-3 text-[9px] text-[#94a3b8] font-normal w-20" />
                   {STRATEGIES.map(s => (
                     <th key={s} className="text-center py-1.5 px-2 text-[9px] font-semibold"
                       style={{ color: STRAT_COLORS[s] }}>{s.slice(0, 7)}</th>
@@ -86,11 +86,11 @@ export default function Correlation() {
                       const val = correlationMatrix[i][j]
                       const isD = i === j
                       const abs = Math.abs(val)
-                      const bg = isD ? '#192840'
+                      const bg = isD ? '#f1f5f9'
                         : val > 0
-                          ? `rgba(77,144,255,${Math.min(0.6, abs * 0.7)})`
-                          : `rgba(232,85,104,${Math.min(0.6, abs * 0.7)})`
-                      const tc = isD ? '#c8daf0' : abs > 0.3 ? (val > 0 ? '#4d90ff' : '#e85568') : '#7a96b4'
+                          ? `rgba(37,99,235,${Math.min(0.15, abs * 0.2)})`
+                          : `rgba(220,38,38,${Math.min(0.15, abs * 0.2)})`
+                      const tc = isD ? '#334155' : abs > 0.3 ? (val > 0 ? '#2563eb' : '#dc2626') : '#64748b'
                       return (
                         <td key={j} className="py-1 px-1 text-center">
                           <div className="text-[10px] font-mono font-semibold py-1.5 px-1 rounded text-center"
@@ -112,12 +112,12 @@ export default function Correlation() {
           <div className="p-3" style={{ height: 270 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={retDist} margin={{ top: 5, right: 8, bottom: 22, left: -14 }}>
-                <CartesianGrid strokeDasharray="2 6" stroke="#162336" vertical={false} />
-                <XAxis dataKey="bin" tick={{ fill: '#4a6a8a', fontSize: 9 }} tickLine={false} axisLine={false} angle={-45} dy={10}
-                  label={{ value: 'Daily Return %', fill: '#4a6a8a', fontSize: 10, position: 'insideBottom', offset: -5 }} />
-                <YAxis tick={{ fill: '#4a6a8a', fontSize: 10 }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="2 6" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="bin" tick={{ fill: '#94a3b8', fontSize: 9 }} tickLine={false} axisLine={false} angle={-45} dy={10}
+                  label={{ value: 'Daily Return %', fill: '#94a3b8', fontSize: 10, position: 'insideBottom', offset: -5 }} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} />
                 <Tooltip content={<ChartTooltip formatter={(v) => `${v} days`} />} />
-                <ReferenceLine x="0.0" stroke="#243650" />
+                <ReferenceLine x="0.0" stroke="#e2e8f0" />
                 <Bar dataKey="count" name="Frequency" radius={[2, 2, 0, 0]}>
                   {retDist.map((b, i) => <Cell key={i} fill={b.isNeg ? '#e85568' : '#29cc80'} opacity={0.75} />)}
                 </Bar>
@@ -134,11 +134,11 @@ export default function Correlation() {
           <div className="p-3" style={{ height: 190 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={varData} margin={{ top: 5, right: 8, bottom: 0, left: -14 }}>
-                <CartesianGrid strokeDasharray="2 6" stroke="#162336" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: '#7a96b4', fontSize: 10 }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fill: '#4a6a8a', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `-${v}%`} />
+                <CartesianGrid strokeDasharray="2 6" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `-${v}%`} />
                 <Tooltip content={<ChartTooltip formatter={v => `-${v?.toFixed(3)}%`} />} />
-                <Legend wrapperStyle={{ fontSize: 10, color: '#4a6a8a', fontFamily: 'Inter, sans-serif' }} />
+                <Legend wrapperStyle={{ fontSize: 10, color: '#94a3b8', fontFamily: 'Inter, sans-serif' }} />
                 <Bar dataKey="var95" name="VaR 95%" fill="#e0a030" opacity={0.8} />
                 <Bar dataKey="var99" name="VaR 99%" fill="#e85568" opacity={0.8} radius={[3, 3, 0, 0]} />
               </BarChart>
@@ -151,11 +151,11 @@ export default function Correlation() {
           <div className="p-3" style={{ height: 190 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={rollCorr30} margin={{ top: 5, right: 8, bottom: 0, left: -18 }}>
-                <CartesianGrid strokeDasharray="2 6" stroke="#162336" />
-                <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: '#4a6a8a', fontSize: 10 }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fill: '#4a6a8a', fontSize: 10 }} tickLine={false} axisLine={false} domain={[-1, 1]} />
+                <CartesianGrid strokeDasharray="2 6" stroke="#e2e8f0" />
+                <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} tickLine={false} axisLine={false} domain={[-1, 1]} />
                 <Tooltip content={<ChartTooltip formatter={v => v?.toFixed(3)} />} />
-                <ReferenceLine y={0} stroke="#243650" />
+                <ReferenceLine y={0} stroke="#e2e8f0" />
                 <ReferenceLine y={0.5}  stroke="#e0a03030" strokeDasharray="3 3" />
                 <ReferenceLine y={-0.5} stroke="#e8556830" strokeDasharray="3 3" />
                 <Line type="monotone" dataKey="corr" stroke="#4d90ff" strokeWidth={1.5} dot={false} name="Corr(30d)" connectNulls />
@@ -171,9 +171,9 @@ export default function Correlation() {
         <div className="p-3">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="border-b border-[#192840]">
+              <tr className="border-b border-[#e2e8f0]">
                 {['Strategy','Alloc%','Ann Vol%','VaR 95% (1d)','VaR 99% (1d)','CVaR 95%','10d VaR 99%','VaR/$M'].map(h => (
-                  <th key={h} className="text-left py-2 px-3 text-[9px] text-[#4a6a8a] font-medium tracking-wider uppercase">{h}</th>
+                  <th key={h} className="text-left py-2 px-3 text-[9px] text-[#94a3b8] font-medium tracking-wider uppercase">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -181,27 +181,27 @@ export default function Correlation() {
               {varData.map((row, i) => {
                 const s = strategyData[i]
                 return (
-                  <tr key={i} className="border-b border-[#0d1828] hover:bg-[#0d1828] transition-colors">
+                  <tr key={i} className="border-b border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors">
                     <td className="py-2 px-3 font-semibold" style={{ color: row.color }}>{row.name}</td>
-                    <td className="py-2 px-3 font-mono text-[#7a96b4]">{s.allocation}%</td>
-                    <td className="py-2 px-3 font-mono text-[#e0a030]">{row.vol}%</td>
-                    <td className="py-2 px-3 font-mono text-[#e0a030]">-{row.var95}%</td>
-                    <td className="py-2 px-3 font-mono text-[#e85568]">-{row.var99}%</td>
-                    <td className="py-2 px-3 font-mono text-[#e85568]">-{row.cvar95}%</td>
-                    <td className="py-2 px-3 font-mono text-[#e85568]">-{(row.var99 * Math.sqrt(10)).toFixed(3)}%</td>
-                    <td className="py-2 px-3 font-mono text-[#7a96b4]">${(row.var99 / 100 * s.aum * 1e6 / 1e3).toFixed(0)}K</td>
+                    <td className="py-2 px-3 font-mono text-[#64748b]">{s.allocation}%</td>
+                    <td className="py-2 px-3 font-mono text-[#d97706]">{row.vol}%</td>
+                    <td className="py-2 px-3 font-mono text-[#d97706]">-{row.var95}%</td>
+                    <td className="py-2 px-3 font-mono text-[#dc2626]">-{row.var99}%</td>
+                    <td className="py-2 px-3 font-mono text-[#dc2626]">-{row.cvar95}%</td>
+                    <td className="py-2 px-3 font-mono text-[#dc2626]">-{(row.var99 * Math.sqrt(10)).toFixed(3)}%</td>
+                    <td className="py-2 px-3 font-mono text-[#64748b]">${(row.var99 / 100 * s.aum * 1e6 / 1e3).toFixed(0)}K</td>
                   </tr>
                 )
               })}
-              <tr className="border-t border-[#e0a03030] bg-[#e0a03008]">
-                <td className="py-2 px-3 font-semibold text-[#e0a030]">FUND</td>
-                <td className="py-2 px-3 font-mono text-[#7a96b4]">100%</td>
-                <td className="py-2 px-3 font-mono text-[#e0a030]">~11.2%</td>
-                <td className="py-2 px-3 font-mono text-[#e0a030]">-{fundVar.var95}%</td>
-                <td className="py-2 px-3 font-mono text-[#e85568]">-{fundVar.var99}%</td>
-                <td className="py-2 px-3 font-mono text-[#e85568]">-{fundVar.cvar95}%</td>
-                <td className="py-2 px-3 font-mono text-[#e85568]">-{(fundVar.var99 * Math.sqrt(10)).toFixed(3)}%</td>
-                <td className="py-2 px-3 font-mono text-[#7a96b4]">${(fundVar.var99 / 100 * 247.3 * 1e6 / 1e3).toFixed(0)}K</td>
+              <tr className="border-t border-[#d9770630] bg-[#d9770608]">
+                <td className="py-2 px-3 font-semibold text-[#d97706]">FUND</td>
+                <td className="py-2 px-3 font-mono text-[#64748b]">100%</td>
+                <td className="py-2 px-3 font-mono text-[#d97706]">~11.2%</td>
+                <td className="py-2 px-3 font-mono text-[#d97706]">-{fundVar.var95}%</td>
+                <td className="py-2 px-3 font-mono text-[#dc2626]">-{fundVar.var99}%</td>
+                <td className="py-2 px-3 font-mono text-[#dc2626]">-{fundVar.cvar95}%</td>
+                <td className="py-2 px-3 font-mono text-[#dc2626]">-{(fundVar.var99 * Math.sqrt(10)).toFixed(3)}%</td>
+                <td className="py-2 px-3 font-mono text-[#64748b]">${(fundVar.var99 / 100 * 247.3 * 1e6 / 1e3).toFixed(0)}K</td>
               </tr>
             </tbody>
           </table>

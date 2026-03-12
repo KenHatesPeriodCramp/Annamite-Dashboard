@@ -9,6 +9,7 @@ import Correlation from './pages/Correlation'
 import Macro from './pages/Macro'
 import Regime from './pages/Regime'
 import Retail from './pages/Retail'
+import PortfolioTracking from './pages/PortfolioTracking'
 
 const PAGES = {
   overview: Overview,
@@ -20,6 +21,7 @@ const PAGES = {
   macro: Macro,
   regime: Regime,
   retail: Retail,
+  portfolioTracking: PortfolioTracking,
 }
 
 export default function App() {

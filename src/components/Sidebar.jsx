@@ -11,17 +11,29 @@ const NAV = [
   { id: 'macro',       label: 'Macro Monitor',        group: 'MACRO' },
   { id: 'regime',      label: 'Regime Analysis',      group: 'MACRO' },
   { id: 'retail',      label: 'Retail Participation', group: 'ALPHA' },
+  { id: 'portfolioTracking', label: 'Portfolio Workbook', group: 'OPERATIONS' },
 ]
 
-const GROUPS = ['PERFORMANCE', 'RISK', 'MACRO', 'ALPHA']
+const GROUPS = ['PERFORMANCE', 'RISK', 'MACRO', 'ALPHA', 'OPERATIONS']
 
 export default function Sidebar({ active, onNav }) {
   const [time, setTime] = useState('')
 
   useEffect(() => {
-    const fmt = () => new Date().toLocaleTimeString('en-US', {
-      hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+    const timeFormatter = new Intl.DateTimeFormat('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     })
+    const zoneFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZoneName: 'short',
+    })
+    const fmt = () => {
+      const now = new Date()
+      const zone = zoneFormatter.formatToParts(now).find(part => part.type === 'timeZoneName')?.value ?? 'Local'
+      return `${timeFormatter.format(now)} ${zone}`
+    }
     setTime(fmt())
     const t = setInterval(() => setTime(fmt()), 1000)
     return () => clearInterval(t)
