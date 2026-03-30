@@ -242,6 +242,31 @@ function sharpe(key: keyof ReturnPoint): number {
   return +(annualRet / annualVol).toFixed(2);
 }
 
+// Sortino Ratio (downside deviation denominator, rf=0)
+function sortino(key: keyof ReturnPoint): number {
+  const rets: number[] = [];
+  for (let i = 1; i < RETURN_SERIES.length; i++) {
+    const prev = (RETURN_SERIES[i - 1][key] as number) + 1;
+    const curr = (RETURN_SERIES[i][key] as number) + 1;
+    rets.push(curr / prev - 1);
+  }
+  const mean = rets.reduce((s, r) => s + r, 0) / rets.length;
+  const annualRet = Math.pow(1 + mean, 252) - 1;
+  const downVarAnn = rets.filter(r => r < 0).reduce((s, r) => s + r ** 2, 0) / rets.length * 252;
+  const downDev = Math.sqrt(downVarAnn);
+  return downDev === 0 ? 0 : +(annualRet / downDev).toFixed(2);
+}
+
+// Calmar Ratio (CAGR / |Max Drawdown|)
+function calmar(key: keyof ReturnPoint): number {
+  const dd = Math.abs(maxDD(key));
+  if (dd === 0) return 0;
+  const totalR = (last[key] as number) + 1;
+  const years = RETURN_SERIES.length / 252;
+  const cagr = Math.pow(totalR, 1 / years) - 1;
+  return +(cagr / dd).toFixed(2);
+}
+
 export interface ManagerStats {
   id: string;
   ytd: number;
@@ -249,6 +274,8 @@ export interface ManagerStats {
   totalReturn: number;
   maxDD: number;
   sharpe: number;
+  sortino: number;
+  calmar: number;
 }
 
 const STAT_KEYS: Record<string, keyof ReturnPoint> = {
@@ -266,6 +293,8 @@ export const MANAGER_STATS: Record<string, ManagerStats> = Object.fromEntries(
       totalReturn: last[k] as number,
       maxDD:       maxDD(k),
       sharpe:      sharpe(k),
+      sortino:     sortino(k),
+      calmar:      calmar(k),
     }];
   })
 );
@@ -344,6 +373,48 @@ export const TRADES: Trade[] = Array.from({ length: 40 }, (_, i) => {
     exchange:    EXCHGS[Math.floor(tradeRng() * EXCHGS.length)],
   };
 }).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+// ── Trade statistics per manager ────────────────────────────
+export interface ManagerTradeStats {
+  managerId: string;
+  totalTrades: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  avgWin: number;
+  avgLoss: number;
+  payoffRatio: number;
+  expectancy: number;
+  profitFactor: number;
+}
+
+export const MANAGER_TRADE_STATS: Record<string, ManagerTradeStats> = Object.fromEntries(
+  MANAGERS.map(m => {
+    const trades = TRADES.filter(t => t.managerId === m.id);
+    const wins   = trades.filter(t => t.pnlUsd > 0);
+    const losses = trades.filter(t => t.pnlUsd < 0);
+    const avgWin   = wins.length   > 0 ? wins.reduce((s, t) => s + t.pnlUsd, 0) / wins.length   : 0;
+    const avgLoss  = losses.length > 0 ? losses.reduce((s, t) => s + t.pnlUsd, 0) / losses.length : 0;
+    const winRate  = trades.length > 0 ? wins.length / trades.length : 0;
+    const payoff   = Math.abs(avgLoss) > 0 ? Math.abs(avgWin) / Math.abs(avgLoss) : 0;
+    const expectancy = winRate * avgWin + (1 - winRate) * avgLoss;
+    const grossWin  = wins.reduce((s, t) => s + t.pnlUsd, 0);
+    const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnlUsd, 0));
+    const profitFactor = grossLoss > 0 ? grossWin / grossLoss : 0;
+    return [m.id, {
+      managerId:   m.id,
+      totalTrades: trades.length,
+      wins:        wins.length,
+      losses:      losses.length,
+      winRate:     +winRate.toFixed(3),
+      avgWin:      +avgWin.toFixed(0),
+      avgLoss:     +avgLoss.toFixed(0),
+      payoffRatio: +payoff.toFixed(2),
+      expectancy:  +expectancy.toFixed(0),
+      profitFactor: +profitFactor.toFixed(2),
+    }];
+  })
+);
 
 // ── Margin / leverage per manager ─────────────────────────
 export interface MarginData {

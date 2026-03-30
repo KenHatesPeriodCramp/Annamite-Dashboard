@@ -4,6 +4,7 @@ import {
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, LineChart, Line, ReferenceLine,
+  PieChart, Pie, Cell,
 } from 'recharts';
 import { useMemo, useState } from 'react';
 
@@ -29,6 +30,41 @@ const FACTOR_LABELS: Record<string, string> = {
 
 export default function MultifactorAnalysis() {
   const [range, setRange] = useState('6M');
+
+  // Systematic vs Idiosyncratic risk decomposition
+  const riskDecomp = useMemo(() => {
+    const d = RANGES[range];
+    const slice = FACTOR_SERIES.slice(-d);
+    if (slice.length === 0) return [];
+    const keys = ['marketFactor', 'styleFactor', 'cryptoFactor', 'macroFactor', 'alpha', 'error'] as const;
+    const labels = ['Market β', 'Style', 'Crypto', 'Macro', 'Alpha α', 'Residual ε'];
+    const fills  = [FACTOR_COLORS.marketFactor, FACTOR_COLORS.styleFactor, FACTOR_COLORS.cryptoFactor, FACTOR_COLORS.macroFactor, FACTOR_COLORS.alpha, FACTOR_COLORS.error];
+    const variances = keys.map(k => {
+      const arr = slice.map(p => p[k]);
+      const m = arr.reduce((s, v) => s + v, 0) / arr.length;
+      return arr.reduce((s, v) => s + (v - m) ** 2, 0) / arr.length;
+    });
+    const totalVar = variances.reduce((s, v) => s + v, 0);
+    return keys.map((_, i) => ({
+      name:  labels[i],
+      value: +(variances[i] / totalVar * 100).toFixed(1),
+      fill:  fills[i],
+    }));
+  }, [range]);
+
+  // Factor period-total contribution (waterfall summary)
+  const factorSummary = useMemo(() => {
+    const d = RANGES[range];
+    const slice = FACTOR_SERIES.slice(-d);
+    const keys = ['marketFactor', 'styleFactor', 'cryptoFactor', 'macroFactor', 'alpha'] as const;
+    return keys
+      .map(k => ({
+        name:  FACTOR_LABELS[k] ?? k,
+        value: +(slice.reduce((s, p) => s + p[k], 0) * 100).toFixed(2),
+        fill:  FACTOR_COLORS[k],
+      }))
+      .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+  }, [range]);
 
   // Resample to weekly for bar chart readability
   const attrData = useMemo(() => {
@@ -100,7 +136,64 @@ export default function MultifactorAnalysis() {
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {/* Factor equation */}
+
+        {/* Systematic vs Idiosyncratic risk decomposition + Factor period summary */}
+        <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 8 }}>
+
+          {/* Risk decomposition donut */}
+          <div className="panel">
+            <div className="panel-hdr">
+              <span className="panel-title">RISK DECOMPOSITION</span>
+              <span className="panel-meta">variance attribution</span>
+            </div>
+            <div style={{ height: 200, display: 'flex', alignItems: 'center' }}>
+              <ResponsiveContainer width="52%" height="100%">
+                <PieChart>
+                  <Pie data={riskDecomp} dataKey="value" cx="50%" cy="50%" outerRadius={72} innerRadius={36} paddingAngle={2}>
+                    {riskDecomp.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: 'var(--bg-panel-hdr)', border: '1px solid var(--border-bright)', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 11 }}
+                    formatter={(v: unknown) => [`${v}%`]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ flex: 1, paddingRight: 8 }}>
+                {riskDecomp.map(item => (
+                  <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 9, fontFamily: 'var(--font-data)', color: 'var(--text-muted)' }}>
+                      <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: item.fill, marginRight: 5 }} />
+                      {item.name}
+                    </span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-data)', color: item.fill, fontWeight: 'bold' }}>{item.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Factor period-total contribution */}
+          <div className="panel">
+            <div className="panel-hdr">
+              <span className="panel-title">FACTOR CONTRIBUTION — PERIOD TOTAL</span>
+              <span className="panel-meta">cumulative P&amp;L by factor</span>
+            </div>
+            <div style={{ height: 200, padding: '8px 4px 4px 0' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={factorSummary} layout="vertical" margin={{ top: 4, right: 48, bottom: 4, left: 0 }}>
+                  <CartesianGrid strokeDasharray="2 4" stroke="var(--border)" horizontal={false} />
+                  <XAxis type="number" tickFormatter={(v: number) => `${v.toFixed(1)}%`} tick={{ fill: 'var(--text-dim)', fontSize: 9 }} tickLine={false} axisLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} width={68} />
+                  <ReferenceLine x={0} stroke="var(--border-bright)" />
+                  <Tooltip contentStyle={{ background: 'var(--bg-panel-hdr)', border: '1px solid var(--border-bright)', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 11 }}
+                    formatter={(v: unknown) => [`${Number(v).toFixed(2)}%`, 'Contribution']} />
+                  <Bar dataKey="value" maxBarSize={20}>
+                    {factorSummary.map((entry, i) => <Cell key={i} fill={entry.value >= 0 ? entry.fill : `${entry.fill}99`} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
         <div className="panel">
           <div className="panel-hdr"><span className="panel-title">FACTOR MODEL DEFINITION</span></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)' }}>

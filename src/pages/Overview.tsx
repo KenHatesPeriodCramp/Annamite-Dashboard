@@ -67,6 +67,25 @@ export default function Overview() {
   const [showManagers, setShowManagers] = useState<Record<string, boolean>>(
     Object.fromEntries([...MANAGERS.map(m => [m.id, true]), ['portfolio', true], ['BTC', true]])
   );
+  const [mgrSort, setMgrSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'ytd', dir: 'desc' });
+
+  const sortedMgrs = useMemo(() => [...MANAGERS].sort((a, b) => {
+    let va: number, vb: number;
+    if (mgrSort.key === 'aum') { va = a.aum; vb = b.aum; }
+    else if (mgrSort.key === 'alloc') { va = a.targetAlloc; vb = b.targetAlloc; }
+    else {
+      va = (MANAGER_STATS[a.id] as unknown as Record<string, number>)[mgrSort.key] ?? 0;
+      vb = (MANAGER_STATS[b.id] as unknown as Record<string, number>)[mgrSort.key] ?? 0;
+    }
+    return mgrSort.dir === 'desc' ? vb - va : va - vb;
+  }), [mgrSort]);
+
+  const handleMgrSort = (key: string) => {
+    setMgrSort(prev => prev.key === key
+      ? { key, dir: prev.dir === 'desc' ? 'asc' : 'desc' }
+      : { key, dir: 'desc' });
+  };
+  const si = (key: string) => mgrSort.key === key ? (mgrSort.dir === 'desc' ? ' ↓' : ' ↑') : '';
 
   const chartData = useMemo(() => {
     const days = RANGES[range];
@@ -212,7 +231,7 @@ export default function Overview() {
         <div className="panel manager-table-panel" style={{ minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className="panel-hdr">
             <span className="panel-title">MANAGER SUMMARY</span>
-            <span className="panel-meta">{MANAGERS.length} ACTIVE</span>
+            <span className="panel-meta">{MANAGERS.length} ACTIVE · ↑↓ CLICK HEADER TO SORT</span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
             <table className="bb-table">
@@ -220,17 +239,17 @@ export default function Overview() {
                 <tr>
                   <th>MANAGER</th>
                   <th>TYPE</th>
-                  <th className="r">AUM</th>
-                  <th className="r">ALLOC</th>
-                  <th className="r">YTD</th>
-                  <th className="r">1M</th>
-                  <th className="r">SHARPE</th>
-                  <th className="r">MAX DD</th>
+                  <th className="r" style={{ cursor: 'pointer' }} onClick={() => handleMgrSort('aum')}>AUM{si('aum')}</th>
+                  <th className="r" style={{ cursor: 'pointer' }} onClick={() => handleMgrSort('alloc')}>ALLOC{si('alloc')}</th>
+                  <th className="r" style={{ cursor: 'pointer' }} onClick={() => handleMgrSort('ytd')}>YTD{si('ytd')}</th>
+                  <th className="r" style={{ cursor: 'pointer' }} onClick={() => handleMgrSort('m1')}>1M{si('m1')}</th>
+                  <th className="r" style={{ cursor: 'pointer' }} onClick={() => handleMgrSort('sharpe')}>SHARPE{si('sharpe')}</th>
+                  <th className="r" style={{ cursor: 'pointer' }} onClick={() => handleMgrSort('maxDD')}>MAX DD{si('maxDD')}</th>
                   <th>STATUS</th>
                 </tr>
               </thead>
               <tbody>
-                {MANAGERS.map(m => {
+                {sortedMgrs.map(m => {
                   const st = MANAGER_STATS[m.id];
                   return (
                     <tr key={m.id}>
