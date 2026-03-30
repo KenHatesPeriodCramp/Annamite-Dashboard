@@ -11,7 +11,7 @@ import MultifactorAnalysis from './pages/MultifactorAnalysis';
 
 export default function App() {
   return (
-    <BrowserRouter basename="/Annamite-Dashboard">
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index            element={<Overview />} />
