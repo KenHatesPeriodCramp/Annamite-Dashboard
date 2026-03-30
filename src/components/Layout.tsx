@@ -106,7 +106,7 @@ export default function Layout() {
               <span style={{ color: 'var(--text-bright)' }}>3</span>
             </div>
             <div className="sidebar-footer-row" style={{ marginTop: 4, borderTop: '1px solid var(--border)', paddingTop: 4 }}>
-              <span style={{ color: 'var(--green)', fontSize: 'var(--font-xs)' }}>● API CONNECTED</span>
+              <span style={{ color: 'var(--green)', fontSize: 'var(--font-xs)' }}>● DEMO PURPOSE</span>
             </div>
           </div>
         </nav>
